@@ -53,6 +53,8 @@ print(f"Channel ID: {channel_id}")
 
 #i hate this next section of code.
 #i never want to touch keycodes again.
+#why i need this i use keyboard module lol
+#keycodes going to trash (no i need working "keys" command)
 keycodes = {
     'esc': (0x01, 0x81),
     '1': (0x02, 0x82),
