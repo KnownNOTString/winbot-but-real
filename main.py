@@ -1,6 +1,16 @@
 import virtualbox, discord, sys, asyncio, traceback
 from discord.ext import commands
 from configparser import ConfigParser as configparser
+import keyboard
+import pyautogui
+from pynput.mouse import Button, Controller
+
+mouse = Controller()
+
+mouse.move(0, 599)
+
+def mousemove(x,y):
+    Controller().move(int(x), int(y))
 
 def load_config(config_file_name):
     config = configparser()
@@ -141,15 +151,11 @@ bot.owner_id = owner_id
 bot.channel_id = channel_id
 bot.mouse_state = 0
 
-bot.vbox = virtualbox.VirtualBox()
-bot.vm = bot.vbox.find_machine(vm_name)
-bot.session = bot.vm.create_session()
-
 @bot.event
 async def on_ready():
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     channel = bot.get_channel(bot.channel_id)
-    await channel.send('Winbot has started! Current VM state:', file=discord.File('temp.png'))
+    await channel.send('Winbot has started! Current Machine state:', file=discord.File('temp.png'))
 
 @bot.event
 async def on_command_error(ctx, exception):
@@ -165,25 +171,24 @@ async def ping(ctx):
     await ctx.send('Pong!')
 
 #Get image of VM
-def get_vm_screenshot(vm_sesh, file_name):
-    h, w, _, _, _, _ = vm_sesh.console.display.get_screen_resolution(0)
-    png = vm_sesh.console.display.take_screen_shot_to_array(0, h, w, virtualbox.library.BitmapFormat.png)
-    with open(file_name, 'wb') as file:
-        file.write(png)
+def get_vm_screenshot(file_name):
+    screenshot = pyautogui.screenshot()
+    screenshot.save('./' + file_name)
+    print('frame saved')
 
 @bot.command()
 async def screen(ctx):
     """Get a screenshot of the VM."""
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Say cheese!', file=discord.File('temp.png'))
 
 #Send long string or normal chars to VM
 @bot.command()
 async def type(ctx, *, arg):
     """Sends a long string of text to the VM, followed by a newline."""
-    bot.session.console.keyboard.put_keys(arg + '\n')
+    keyboard.write(str(arg))
     await asyncio.sleep(0.5)
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Send special buttons to the VM
@@ -192,28 +197,11 @@ def release_special_keys(key_session):
     key_session.console.keyboard.put_scancodes(release_codes)
 
 @bot.command()
-async def press(ctx, *args):
-    """Send special keys to the VM.
-    
-    Get a list of valid keys with vb!keys. Also accepts a sequence of keys."""
-    try:
-        temp_scancodes = []
-        for key in args:
-            print(keycodes[key])
-            if isinstance(keycodes[key], int):
-                temp_scancodes.append(keycodes[key])
-            else:
-                temp_scancodes = [*temp_scancodes, *keycodes[key]]
-        print(temp_scancodes)
-        bot.session.console.keyboard.put_scancodes(temp_scancodes)
-        release_special_keys(bot.session)
-        await asyncio.sleep(0.5)
-        get_vm_screenshot(bot.session, 'temp.png')
-        await ctx.send('Done!', file=discord.File('temp.png'))
-        bot.session.console.keyboard.release_keys()
-    except Exception as e:
-        print(repr(e))
-        await ctx.send("Something went wrong whilst doing that, try again or check the log!")
+async def press(ctx, *, args):
+    keyboard.press_and_release(str(args))
+    await asyncio.sleep(0.5)
+    get_vm_screenshot('temp.png')
+    await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Send a mouse command
 @bot.group()
@@ -267,37 +255,39 @@ async def release(ctx, *args):
     bot.mouse_state = 0x00
     bot.session.console.mouse.put_mouse_event(0, 0, 0, 0, bot.mouse_state)
     await asyncio.sleep(0.5)
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Move the mouse right (+X).
 @mouse.command()
 async def right(ctx, pixels):
-    bot.session.console.mouse.put_mouse_event(int(pixels), 0, 0, 0, bot.mouse_state)
+    mousemove(int(pixels), 0)
     await asyncio.sleep(0.5)
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Move the mouse left (-X).
 @mouse.command()
 async def left(ctx, pixels):
-    bot.session.console.mouse.put_mouse_event(0-int(pixels), 0, 0, 0, bot.mouse_state)
+    pixelst = "-" + str(pixels)
+    mousemove(int(pixelst), 0)
     await asyncio.sleep(0.5)
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Move the mouse down (+Y).
 @mouse.command()
 async def down(ctx, pixels):
-    bot.session.console.mouse.put_mouse_event(0, int(pixels), 0, 0, bot.mouse_state)
+    mousemove(0, int(pixels))
     await asyncio.sleep(0.5)
-    get_vm_screenshot(bot.session, 'temp.png')
+    get_vm_screenshot('temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
 
 #Move the mouse up (-Y).
 @mouse.command()
 async def up(ctx, pixels):
-    bot.session.console.mouse.put_mouse_event(0, 0-int(pixels), 0, 0, bot.mouse_state)
+    pixelst = "-" + str(pixels)
+    mousemove(0, int(pixelst))
     await asyncio.sleep(0.5)
     get_vm_screenshot(bot.session, 'temp.png')
     await ctx.send('Done!', file=discord.File('temp.png'))
