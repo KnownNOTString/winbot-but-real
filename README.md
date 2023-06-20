@@ -1,5 +1,6 @@
 # winbot
-A Discord bot for interfacing with a VirtualBox VM.
+A Discord bot for interaction with a YOUR SYSTEM
+iam too lazy to delete other stuff
 
 ## Pre-Setup
 1. Install Python 3.8. (If you're able to use `discord.py` with your version of Python 3.9, feel free to use 3.9.)
