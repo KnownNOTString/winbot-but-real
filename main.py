@@ -7,6 +7,7 @@ from pynput.mouse import Button, Controller
 
 mouse = Controller()
 
+#delete this string yourself DUDE DELETE THIS STRING I USE IT FOR TEST
 mouse.move(0, 599)
 
 def mousemove(x,y):
