@@ -2,6 +2,10 @@
 A Discord bot for interaction with a YOUR SYSTEM
 iam too lazy to delete other stuff
 
+## project status
+1. he can do screenshot, press keys and move mouse
+thats all lol
+
 ## Pre-Setup
 1. Install Python 3.8. (If you're able to use `discord.py` with your version of Python 3.9, feel free to use 3.9.)
 2. Install VirtualBox.
